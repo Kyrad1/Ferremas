@@ -18,9 +18,8 @@ function Articulos() {
   useEffect(() => {
     const fetchArticulos = async () => {
       try {
-        const baseUrl = import.meta.env.PROD 
-          ? import.meta.env.VITE_BACKEND_URL 
-          : '';
+        const baseUrl = import.meta.env.VITE_API_URL;
+        
         const response = await fetch(`${baseUrl}/api/articulos`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
