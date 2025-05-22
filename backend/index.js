@@ -5,8 +5,16 @@ import cors from "cors"
 const app = express()
 const PORT = process.env.PORT || 3001 // Puerto para el backend
 
+// Configuración de CORS
+const corsOptions = {
+  origin: ['https://ferremasfrontend.vercel.app', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}
+
 // Middleware
-app.use(cors()) // Habilita CORS para todas las rutas
+app.use(cors(corsOptions)) // Habilita CORS con las opciones específicas
 app.use(express.json()) // Para parsear JSON en las solicitudes
 
 // Endpoint para obtener los artículos
