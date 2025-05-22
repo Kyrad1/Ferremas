@@ -1,19 +1,25 @@
 import React from "react"
 import { Link } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
 
 function Home() {
+  const { user, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center p-4">
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <h1 className="text-5xl md:text-7xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 tracking-tight mb-4">
           Ferremas
         </h1>
-        <p className="text-gray-400 text-xl">
+        <p className="text-gray-400 text-xl mb-2">
           Tu ferretería de confianza
         </p>
+        <div className="text-gray-500">
+          Bienvenido, {user?.username} ({user?.role})
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col md:flex-row gap-6 mb-8">
         <Link
           to="/articulos"
           className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20"
@@ -40,6 +46,13 @@ function Home() {
           </div>
         </Link>
       </div>
+
+      <button
+        onClick={logout}
+        className="px-6 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors duration-300"
+      >
+        Cerrar sesión
+      </button>
     </div>
   )
 }
