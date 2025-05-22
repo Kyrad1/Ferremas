@@ -28,6 +28,10 @@ function ArticuloDetalle() {
   const [articulo, setArticulo] = useState<Articulo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [formErrors, setFormErrors] = useState<{
+    cantidad?: string;
+    direccionEntrega?: string;
+  }>({})
   const [pedido, setPedido] = useState<PedidoForm>({
     cantidad: 1,
     direccionEntrega: ""
@@ -67,27 +71,31 @@ function ArticuloDetalle() {
 
   const handlePedidoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!articulo) return
-
-    // Validación de datos
+    
+    // Reset form errors
+    setFormErrors({})
+    
+    // Validate form
+    const errors: { cantidad?: string; direccionEntrega?: string } = {}
+    
     if (!pedido.cantidad || pedido.cantidad < 1) {
-      setError("La cantidad debe ser mayor a 0")
+      errors.cantidad = "La cantidad debe ser mayor a 0"
+    }
+    
+    if (!pedido.direccionEntrega.trim()) {
+      errors.direccionEntrega = "La dirección de entrega es requerida"
+    }
+    
+    // If there are errors, show them and stop
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors)
       return
     }
 
-    if (!pedido.direccionEntrega.trim()) {
-      setError("La dirección de entrega es requerida")
-      return
-    }
+    if (!articulo) return
 
     try {
       const baseUrl = import.meta.env.VITE_API_URL
-      console.log('Enviando pedido:', {
-        articuloId: articulo.id,
-        cantidad: pedido.cantidad,
-        direccionEntrega: pedido.direccionEntrega
-      })
-
       const response = await fetch(`${baseUrl}/data/pedidos/nuevo`, {
         method: 'POST',
         headers: {
@@ -104,14 +112,11 @@ function ArticuloDetalle() {
       const data = await response.json()
 
       if (!response.ok) {
-        console.error('Error response:', data)
         throw new Error(data.message || 'Error al crear el pedido')
       }
 
-      console.log('Pedido creado:', data)
       navigate('/pedidos')
     } catch (e) {
-      console.error('Error completo:', e)
       if (e instanceof Error) {
         setError(e.message)
       } else {
@@ -209,8 +214,13 @@ function ArticuloDetalle() {
                   max={articulo.stock}
                   value={pedido.cantidad}
                   onChange={(e) => setPedido({ ...pedido, cantidad: parseInt(e.target.value) })}
-                  className="mt-1 block w-full rounded-md bg-gray-700/50 border border-gray-600 text-gray-300 px-3 py-2"
+                  className={`mt-1 block w-full rounded-md bg-gray-700/50 border ${
+                    formErrors.cantidad ? 'border-red-500' : 'border-gray-600'
+                  } text-gray-300 px-3 py-2`}
                 />
+                {formErrors.cantidad && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.cantidad}</p>
+                )}
               </div>
 
               <div>
@@ -221,9 +231,14 @@ function ArticuloDetalle() {
                   id="direccion"
                   value={pedido.direccionEntrega}
                   onChange={(e) => setPedido({ ...pedido, direccionEntrega: e.target.value })}
-                  className="mt-1 block w-full rounded-md bg-gray-700/50 border border-gray-600 text-gray-300 px-3 py-2"
+                  className={`mt-1 block w-full rounded-md bg-gray-700/50 border ${
+                    formErrors.direccionEntrega ? 'border-red-500' : 'border-gray-600'
+                  } text-gray-300 px-3 py-2`}
                   rows={3}
                 />
+                {formErrors.direccionEntrega && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.direccionEntrega}</p>
+                )}
               </div>
 
               <button
