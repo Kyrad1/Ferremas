@@ -15,16 +15,23 @@ function Sucursales() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('Estado de sucursales actualizado:', sucursales);
+  }, [sucursales]);
+
+  useEffect(() => {
     const fetchSucursales = async () => {
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
+        console.log('URL de la API:', `${baseUrl}/api/sucursales`);
         const response = await fetch(`${baseUrl}/api/sucursales`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
         const data = await response.json()
+        console.log('Datos recibidos:', data);
         setSucursales(data)
       } catch (e) {
+        console.error('Error completo:', e);
         if (e instanceof Error) {
           setError(e.message)
         } else {
