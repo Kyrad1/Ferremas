@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import Home from "./pages/Home"
 import Articulos from "./pages/Articulos"
+import ArticuloDetalle from "./pages/ArticuloDetalle"
 import Sucursales from "./pages/Sucursales"
 import Login from "./pages/Login"
 
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Articulos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/articulos/:id"
+            element={
+              <ProtectedRoute>
+                <ArticuloDetalle />
               </ProtectedRoute>
             }
           />

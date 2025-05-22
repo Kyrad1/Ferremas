@@ -182,4 +182,351 @@ app.get("/api/vendedores", verifyToken, checkRole(['sellers:read']), async (req,
   }
 })
 
+// Endpoint para obtener un producto específico por ID
+app.get("/api/articulos/:id", verifyToken, checkRole(['products:read']), async (req, res) => {
+  try {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const articulo = response.data.find(art => art.id === req.params.id)
+    
+    if (!articulo) {
+      return res.status(404).json({ message: "Artículo no encontrado" })
+    }
+
+    res.json(articulo)
+  } catch (error) {
+    console.error("Error fetching data:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los datos de la API externa",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para marcar/desmarcar producto como novedad
+app.post("/api/articulos/:id/novedad", verifyToken, checkRole(['products:write']), async (req, res) => {
+  try {
+    const { isNovedad } = req.body
+    const articuloId = req.params.id
+
+    // Primero verificamos que el artículo existe
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const articulo = response.data.find(art => art.id === articuloId)
+    
+    if (!articulo) {
+      return res.status(404).json({ message: "Artículo no encontrado" })
+    }
+
+    // Aquí normalmente actualizaríamos en una base de datos
+    // Como estamos usando JSON, simularemos la respuesta
+    res.json({
+      ...articulo,
+      isNovedad: isNovedad
+    })
+  } catch (error) {
+    console.error("Error updating data:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al actualizar el artículo",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para marcar/desmarcar producto como promoción
+app.post("/api/articulos/:id/promocion", verifyToken, checkRole(['products:write']), async (req, res) => {
+  try {
+    const { isPromocion, descuento } = req.body
+    const articuloId = req.params.id
+
+    // Primero verificamos que el artículo existe
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const articulo = response.data.find(art => art.id === articuloId)
+    
+    if (!articulo) {
+      return res.status(404).json({ message: "Artículo no encontrado" })
+    }
+
+    // Aquí normalmente actualizaríamos en una base de datos
+    // Como estamos usando JSON, simularemos la respuesta
+    res.json({
+      ...articulo,
+      isPromocion: isPromocion,
+      descuento: descuento
+    })
+  } catch (error) {
+    console.error("Error updating data:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al actualizar el artículo",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener solo productos en promoción
+app.get("/api/articulos/promociones", verifyToken, checkRole(['products:read']), async (req, res) => {
+  try {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    // Filtramos los artículos que están en promoción
+    // Como no tenemos una base de datos, simularemos que los artículos con precio terminado en 99 están en promoción
+    const promociones = response.data.filter(art => art.precio.toString().endsWith('99'))
+
+    res.json(promociones)
+  } catch (error) {
+    console.error("Error fetching data:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los datos de la API externa",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener solo productos marcados como novedades
+app.get("/api/articulos/novedades", verifyToken, checkRole(['products:read']), async (req, res) => {
+  try {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    // Filtramos los artículos que son novedades
+    // Como no tenemos una base de datos, simularemos que los artículos más caros son novedades
+    const novedades = response.data
+      .sort((a, b) => b.precio - a.precio)
+      .slice(0, 5)
+
+    res.json(novedades)
+  } catch (error) {
+    console.error("Error fetching data:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los datos de la API externa",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener un vendedor específico por ID
+app.get("/api/vendedores/:id", verifyToken, checkRole(['sellers:read']), async (req, res) => {
+  try {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/vendedores"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const vendedor = response.data.find(v => v.id === req.params.id)
+    
+    if (!vendedor) {
+      return res.status(404).json({ message: "Vendedor no encontrado" })
+    }
+
+    res.json(vendedor)
+  } catch (error) {
+    console.error("Error fetching data:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los datos de la API externa",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para solicitar contacto con un vendedor
+app.post("/api/vendedores/:id/contacto", verifyToken, async (req, res) => {
+  try {
+    const vendedorId = req.params.id
+    const { mensaje, tipo_contacto } = req.body
+    const usuario = req.user
+
+    // Primero verificamos que el vendedor existe
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/vendedores"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const vendedor = response.data.find(v => v.id === vendedorId)
+    
+    if (!vendedor) {
+      return res.status(404).json({ message: "Vendedor no encontrado" })
+    }
+
+    // Aquí normalmente enviaríamos un email o notificación al vendedor
+    // Como es un ejemplo, solo simularemos la respuesta
+    res.json({
+      message: "Solicitud de contacto enviada exitosamente",
+      detalles: {
+        vendedor: vendedor.nombre,
+        cliente: usuario.id,
+        fecha: new Date().toISOString(),
+        estado: "pendiente",
+        tipo_contacto,
+        mensaje
+      }
+    })
+  } catch (error) {
+    console.error("Error sending contact request:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al enviar la solicitud de contacto",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para crear un pedido monoproducto
+app.post("/api/pedidos", verifyToken, checkRole(['orders:create']), async (req, res) => {
+  try {
+    const { articuloId, cantidad, direccionEntrega } = req.body
+    const usuario = req.user
+
+    // Verificar que el artículo existe y hay stock
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const articulo = response.data.find(art => art.id === articuloId)
+    
+    if (!articulo) {
+      return res.status(404).json({ message: "Artículo no encontrado" })
+    }
+
+    if (articulo.stock < cantidad) {
+      return res.status(400).json({ 
+        message: "Stock insuficiente",
+        stockDisponible: articulo.stock
+      })
+    }
+
+    // Calcular el total
+    const total = articulo.precio * cantidad
+
+    // Aquí normalmente guardaríamos el pedido en una base de datos
+    // Como es un ejemplo, solo simularemos la respuesta
+    res.json({
+      id: `PED-${Date.now()}`,
+      cliente: {
+        id: usuario.id,
+        email: usuario.email
+      },
+      articulo: {
+        id: articulo.id,
+        nombre: articulo.nombre,
+        precio: articulo.precio
+      },
+      cantidad,
+      total,
+      direccionEntrega,
+      estado: "pendiente_pago",
+      fechaCreacion: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error("Error creating order:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al crear el pedido",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener los pedidos del usuario
+app.get("/api/pedidos", verifyToken, checkRole(['orders:read']), async (req, res) => {
+  try {
+    const usuario = req.user
+
+    // Aquí normalmente consultaríamos los pedidos en una base de datos
+    // Como es un ejemplo, solo simularemos la respuesta con un pedido de ejemplo
+    res.json([
+      {
+        id: "PED-EJEMPLO",
+        cliente: {
+          id: usuario.id,
+          email: usuario.email
+        },
+        articulo: {
+          id: "ART001",
+          nombre: "Martillo Profesional",
+          precio: 15990
+        },
+        cantidad: 1,
+        total: 15990,
+        direccionEntrega: "Av. Ejemplo 123",
+        estado: "entregado",
+        fechaCreacion: "2024-03-15T10:30:00Z"
+      }
+    ])
+  } catch (error) {
+    console.error("Error fetching orders:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los pedidos",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener un pedido específico
+app.get("/api/pedidos/:id", verifyToken, checkRole(['orders:read']), async (req, res) => {
+  try {
+    const pedidoId = req.params.id
+    const usuario = req.user
+
+    // Aquí normalmente consultaríamos el pedido en una base de datos
+    // Como es un ejemplo, solo simularemos la respuesta
+    if (pedidoId === "PED-EJEMPLO") {
+      res.json({
+        id: "PED-EJEMPLO",
+        cliente: {
+          id: usuario.id,
+          email: usuario.email
+        },
+        articulo: {
+          id: "ART001",
+          nombre: "Martillo Profesional",
+          precio: 15990
+        },
+        cantidad: 1,
+        total: 15990,
+        direccionEntrega: "Av. Ejemplo 123",
+        estado: "entregado",
+        fechaCreacion: "2024-03-15T10:30:00Z"
+      })
+    } else {
+      res.status(404).json({ message: "Pedido no encontrado" })
+    }
+  } catch (error) {
+    console.error("Error fetching order:", error.response ? error.response.data : error.message)
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener el pedido",
+      error: error.message,
+    })
+  }
+})
+
 module.exports = app

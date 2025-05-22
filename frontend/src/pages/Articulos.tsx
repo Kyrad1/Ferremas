@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 
 interface Articulo {
@@ -10,6 +11,9 @@ interface Articulo {
   categoria: string;
   subcategoria: string;
   marca: string;
+  isNovedad?: boolean;
+  isPromocion?: boolean;
+  descuento?: number;
 }
 
 function Articulos() {
@@ -76,7 +80,8 @@ function Articulos() {
       {articulos.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {articulos.map((articulo) => (
-            <div
+            <Link
+              to={`/articulos/${articulo.id}`}
               key={articulo.id}
               className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 group"
             >
@@ -85,19 +90,35 @@ function Articulos() {
               </h2>
               <div className="space-y-2 text-gray-300">
                 <p>{articulo.descripcion}</p>
-                <p className="font-semibold text-blue-400">
-                  Precio: ${articulo.precio.toFixed(2)}
-                </p>
-                <p className="text-sm">
-                  Stock disponible: {articulo.stock} unidades
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-blue-400">
+                    ${articulo.precio.toFixed(2)}
+                  </p>
+                  <p className={`text-sm ${articulo.stock > 10 ? 'text-green-400' : 'text-orange-400'}`}>
+                    Stock: {articulo.stock}
+                  </p>
+                </div>
                 <div className="mt-4 space-y-1 text-sm text-gray-400">
                   <p>Categoría: {articulo.categoria}</p>
                   <p>Subcategoría: {articulo.subcategoria}</p>
                   <p>Marca: {articulo.marca}</p>
                 </div>
+                {(articulo.isNovedad || articulo.isPromocion) && (
+                  <div className="flex gap-2 mt-3">
+                    {articulo.isNovedad && (
+                      <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs">
+                        Novedad
+                      </span>
+                    )}
+                    {articulo.isPromocion && (
+                      <span className="px-2 py-1 bg-green-500/10 text-green-400 rounded-full text-xs">
+                        {articulo.descuento}% OFF
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (
