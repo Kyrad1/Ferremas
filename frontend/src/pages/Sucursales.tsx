@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
+import { Link } from "react-router-dom"
 
 interface Sucursal {
   id: string
@@ -95,6 +96,15 @@ function Sucursales() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
+      <div className="mb-8">
+        <Link
+          to="/"
+          className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
+        >
+          ← Volver al inicio
+        </Link>
+      </div>
+
       <header className="mb-12 text-center">
         <h1 className="text-4xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 tracking-tight mb-4">
           Sucursales Ferremas

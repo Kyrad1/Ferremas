@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 
 interface Articulo {
@@ -143,6 +143,21 @@ function ArticuloDetalle() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Link
+            to="/articulos"
+            className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
+          >
+            ← Volver a artículos
+          </Link>
+        </div>
+
+        {error && (
+          <div className="mb-6 bg-red-500/10 p-4 rounded-lg border border-red-500/20">
+            <p className="text-red-400">{error}</p>
+          </div>
+        )}
+
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4">
             {articulo.nombre}
