@@ -2,6 +2,7 @@ const express = require("express")
 const axios = require("axios")
 const cors = require("cors")
 const jwt = require('jsonwebtoken')
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const users = require('./data/users.json')
 const roles = require('./data/roles.json')
 
@@ -506,5 +507,66 @@ app.get("/data/pedidos/:id", verifyToken, checkRole(['orders:read']), async (req
     })
   }
 })
+
+// Rutas de pago
+app.post("/api/payments/create-payment-intent", verifyToken, async (req, res) => {
+  const { pedidoId, amount } = req.body;
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe works with cents
+      currency: 'clp',
+      metadata: {
+        pedidoId,
+        integration_check: 'accept_a_payment'
+      }
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    res.status(400).json({ 
+      message: error.message || 'Error al procesar el pago' 
+    });
+  }
+});
+
+// Webhook de Stripe (debe estar antes de express.json())
+app.post("/api/payments/webhook", express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error('Error verifying webhook signature:', err);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      // Actualizar el estado del pedido a pagado
+      console.log('Payment succeeded:', paymentIntent.id);
+      // TODO: Actualizar el estado del pedido en la base de datos
+      break;
+    case 'payment_intent.payment_failed':
+      const failedPayment = event.data.object;
+      console.log('Payment failed:', failedPayment.id);
+      // TODO: Actualizar el estado del pedido en la base de datos
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
+
+  res.json({ received: true });
+});
 
 module.exports = app
