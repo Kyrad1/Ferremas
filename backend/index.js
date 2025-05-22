@@ -8,6 +8,7 @@ const roles = require('./data/roles.json')
 const app = express()
 const PORT = process.env.PORT || 3001
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_seguro_temporal'
+const EXTERNAL_API_KEY = process.env.EXTERNAL_API_KEY || 'SaGrP9ojGS39hU9ljqbXxQ=='
 
 const corsOptions = {
   origin: ['https://ferremasfrontend.vercel.app', 'http://localhost:5173'],
@@ -113,11 +114,10 @@ app.get("/api/auth/verify", verifyToken, (req, res) => {
 app.get("/api/articulos", verifyToken, checkRole(['products:read']), async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
-    const apiKey = "SaGrP9ojGS39hU9ljqbXxQ=="
 
     const response = await axios.get(apiUrl, {
       headers: {
-        "x-authentication": apiKey,
+        "x-authentication": EXTERNAL_API_KEY,
       },
     })
 
@@ -138,11 +138,10 @@ app.get("/api/articulos", verifyToken, checkRole(['products:read']), async (req,
 app.get("/api/sucursales", verifyToken, async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/sucursales"
-    const apiKey = "SaGrP9ojGS39hU9ljqbXxQ=="
 
     const response = await axios.get(apiUrl, {
       headers: {
-        "x-authentication": apiKey,
+        "x-authentication": EXTERNAL_API_KEY,
       },
     })
 
@@ -163,11 +162,10 @@ app.get("/api/sucursales", verifyToken, async (req, res) => {
 app.get("/api/vendedores", verifyToken, checkRole(['sellers:read']), async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/vendedores"
-    const apiKey = "SaGrP9ojGS39hU9ljqbXxQ=="
 
     const response = await axios.get(apiUrl, {
       headers: {
-        "x-authentication": apiKey,
+        "x-authentication": EXTERNAL_API_KEY,
       },
     })
 

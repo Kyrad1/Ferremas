@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useAuth } from "../context/AuthContext"
 
 interface Sucursal {
   id: string
@@ -17,6 +18,7 @@ function Sucursales() {
   const [vendedores, setVendedores] = useState<Vendedor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { token } = useAuth();
 
   useEffect(() => {
     console.log('Estado de sucursales actualizado:', sucursales);
@@ -28,14 +30,22 @@ function Sucursales() {
         const baseUrl = import.meta.env.VITE_API_URL;
         
         // Fetch sucursales
-        const sucursalesResponse = await fetch(`${baseUrl}/api/sucursales`);
+        const sucursalesResponse = await fetch(`${baseUrl}/api/sucursales`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (!sucursalesResponse.ok) {
           throw new Error(`HTTP error! status: ${sucursalesResponse.status}`);
         }
         const sucursalesData = await sucursalesResponse.json();
         
         // Fetch vendedores
-        const vendedoresResponse = await fetch(`${baseUrl}/api/vendedores`);
+        const vendedoresResponse = await fetch(`${baseUrl}/api/vendedores`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (!vendedoresResponse.ok) {
           throw new Error(`HTTP error! status: ${vendedoresResponse.status}`);
         }
@@ -59,7 +69,7 @@ function Sucursales() {
     };
     
     fetchData();
-  }, []);
+  }, [token]);
 
   const getVendedoresPorSucursal = (sucursalId: string) => {
     return vendedores.filter(vendedor => vendedor.sucursal === sucursalId);

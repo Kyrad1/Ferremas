@@ -1,26 +1,33 @@
 import React, { useState, useEffect } from "react"
+import { useAuth } from "../context/AuthContext"
 
 interface Articulo {
-  id: number
-  nombre: string
-  precio: number
-  stock: number
-  categoria: string
-  subcategoria: string
-  marca: string
+  id: string;
+  nombre: string;
+  descripcion: string;
+  precio: number;
+  stock: number;
+  categoria: string;
+  subcategoria: string;
+  marca: string;
 }
 
 function Articulos() {
   const [articulos, setArticulos] = useState<Articulo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchArticulos = async () => {
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
         
-        const response = await fetch(`${baseUrl}/api/articulos`)
+        const response = await fetch(`${baseUrl}/api/articulos`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -37,7 +44,7 @@ function Articulos() {
       }
     }
     fetchArticulos()
-  }, [])
+  }, [token])
 
   if (loading)
     return (
@@ -76,44 +83,29 @@ function Articulos() {
               <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4 group-hover:from-blue-300 group-hover:to-purple-300 transition-all duration-300">
                 {articulo.nombre}
               </h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-gray-300">
-                  <span className="font-medium">Precio</span>
-                  <span className="text-xl font-bold text-green-400">
-                    ${articulo.precio.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-gray-300">
-                  <span className="font-medium">Stock</span>
-                  <span className={`font-semibold ${articulo.stock > 10 ? 'text-blue-400' : 'text-orange-400'}`}>
-                    {articulo.stock} unidades
-                  </span>
-                </div>
-                <div className="pt-4 border-t border-gray-700/50">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
-                      {articulo.categoria}
-                    </span>
-                    <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm">
-                      {articulo.subcategoria}
-                    </span>
-                    <span className="px-3 py-1 bg-gray-500/10 text-gray-400 rounded-full text-sm">
-                      {articulo.marca}
-                    </span>
-                  </div>
+              <div className="space-y-2 text-gray-300">
+                <p>{articulo.descripcion}</p>
+                <p className="font-semibold text-blue-400">
+                  Precio: ${articulo.precio.toFixed(2)}
+                </p>
+                <p className="text-sm">
+                  Stock disponible: {articulo.stock} unidades
+                </p>
+                <div className="mt-4 space-y-1 text-sm text-gray-400">
+                  <p>Categoría: {articulo.categoria}</p>
+                  <p>Subcategoría: {articulo.subcategoria}</p>
+                  <p>Marca: {articulo.marca}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        !loading && (
-          <div className="flex items-center justify-center py-20">
-            <p className="text-gray-500 text-xl">
-              No se encontraron artículos disponibles.
-            </p>
-          </div>
-        )
+        <div className="flex items-center justify-center py-20">
+          <p className="text-gray-500 text-xl">
+            No se encontraron artículos disponibles.
+          </p>
+        </div>
       )}
     </div>
   )
