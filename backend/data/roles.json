@@ -1,0 +1,58 @@
+{
+  "admin": {
+    "name": "Administrador",
+    "permissions": ["all"],
+    "description": "Acceso total al sistema"
+  },
+  "maintainer": {
+    "name": "Mantenedor",
+    "permissions": [
+      "products:read",
+      "products:write",
+      "promotions:read",
+      "promotions:write",
+      "inventory:read"
+    ],
+    "description": "Gestión de productos y promociones"
+  },
+  "store_manager": {
+    "name": "Jefe de tienda",
+    "permissions": [
+      "sellers:read",
+      "sellers:write",
+      "orders:read",
+      "orders:write",
+      "reports:read"
+    ],
+    "description": "Gestión de vendedores y pedidos"
+  },
+  "warehouse": {
+    "name": "Bodega",
+    "permissions": [
+      "inventory:read",
+      "inventory:write",
+      "stock:read",
+      "stock:write",
+      "orders:read"
+    ],
+    "description": "Gestión de inventario y stock"
+  },
+  "client": {
+    "name": "Cliente",
+    "permissions": [
+      "products:read",
+      "orders:create",
+      "profile:read",
+      "profile:write"
+    ],
+    "description": "Cliente regular del sistema"
+  },
+  "service_account": {
+    "name": "Cuenta de servicio",
+    "permissions": [
+      "api:access",
+      "payments:process"
+    ],
+    "description": "Cuenta para integraciones de servicios"
+  }
+} 

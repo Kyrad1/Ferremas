@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "username": "javier_thompson",
+      "password": "aONF4d6aNBIxRjlgjBRRzrS",
+      "role": "admin",
+      "email": "javier.thompson@ferremas.cl"
+    },
+    {
+      "username": "ignacio_tapia",
+      "password": "f7rWChmQS1JYfThT",
+      "role": "client",
+      "email": "ignacio.tapia@cliente.ferremas.cl"
+    },
+    {
+      "username": "stripe_sa",
+      "password": "dzkQqDL9XZH33YDzhmsf",
+      "role": "service_account",
+      "email": "stripe.service@ferremas.cl"
+    }
+  ]
+} 
