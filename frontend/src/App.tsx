@@ -5,6 +5,8 @@ import Home from "./pages/Home"
 import Articulos from "./pages/Articulos"
 import ArticuloDetalle from "./pages/ArticuloDetalle"
 import Sucursales from "./pages/Sucursales"
+import Pedidos from "./pages/Pedidos"
+import PedidoDetalle from "./pages/PedidoDetalle"
 import Login from "./pages/Login"
 
 interface ProtectedRouteProps {
@@ -64,6 +66,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Sucursales />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pedidos"
+            element={
+              <ProtectedRoute>
+                <Pedidos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pedidos/:id"
+            element={
+              <ProtectedRoute>
+                <PedidoDetalle />
               </ProtectedRoute>
             }
           />
