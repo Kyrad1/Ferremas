@@ -17,7 +17,7 @@ interface PaymentFormProps {
   onError: (error: string) => void;
 }
 
-function PaymentFormContent({ onSuccess, onError }: PaymentFormProps) {
+function PaymentFormContent({ onSuccess, onError, pedidoId }: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,12 +37,13 @@ function PaymentFormContent({ onSuccess, onError }: PaymentFormProps) {
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/pedidos`,
+          return_url: `${window.location.origin}/pago-exitoso?pedido_id=${pedidoId}`,
         },
       });
 
       if (error) {
-        setMessage(error.message || 'Ocurrió un error al procesar el pago.');
+        const errorMessage = encodeURIComponent(error.message || 'Error al procesar el pago');
+        window.location.href = `${window.location.origin}/pago-fallido?pedido_id=${pedidoId}&error=${errorMessage}`;
         onError(error.message || 'Error al procesar el pago');
       } else {
         onSuccess();

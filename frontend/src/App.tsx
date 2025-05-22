@@ -8,6 +8,8 @@ import Sucursales from "./pages/Sucursales"
 import Pedidos from "./pages/Pedidos"
 import PedidoDetalle from "./pages/PedidoDetalle"
 import PagarPedido from "./pages/PagarPedido"
+import PagoExitoso from "./pages/PagoExitoso"
+import PagoFallido from "./pages/PagoFallido"
 import Login from "./pages/Login"
 
 interface ProtectedRouteProps {
@@ -91,6 +93,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <PagarPedido />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pago-exitoso"
+            element={
+              <ProtectedRoute>
+                <PagoExitoso />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pago-fallido"
+            element={
+              <ProtectedRoute>
+                <PagoFallido />
               </ProtectedRoute>
             }
           />
