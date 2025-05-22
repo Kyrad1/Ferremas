@@ -37,13 +37,18 @@ function PaymentFormContent({ onSuccess, onError, pedidoId }: PaymentFormProps) 
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/pago-exitoso?pedido_id=${pedidoId}`,
+          return_url: `https://ferremasfrontend.vercel.app/pago-exitoso?pedido_id=${pedidoId}&payment_intent={PAYMENT_INTENT}`,
+          payment_method_data: {
+            billing_details: {
+              name: 'Cliente Ferremas'
+            }
+          }
         },
       });
 
       if (error) {
         const errorMessage = encodeURIComponent(error.message || 'Error al procesar el pago');
-        window.location.href = `${window.location.origin}/pago-fallido?pedido_id=${pedidoId}&error=${errorMessage}`;
+        window.location.href = `https://ferremasfrontend.vercel.app/pago-fallido?pedido_id=${pedidoId}&error=${errorMessage}`;
         onError(error.message || 'Error al procesar el pago');
       } else {
         onSuccess();
