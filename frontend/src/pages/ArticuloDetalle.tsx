@@ -71,7 +71,7 @@ function ArticuloDetalle() {
 
     try {
       const baseUrl = import.meta.env.VITE_API_URL
-      const response = await fetch(`${baseUrl}/api/pedidos`, {
+      const response = await fetch(`${baseUrl}/data/pedidos/nuevo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,16 +79,17 @@ function ArticuloDetalle() {
         },
         body: JSON.stringify({
           articuloId: articulo.id,
-          ...pedido
+          cantidad: pedido.cantidad,
+          direccionEntrega: pedido.direccionEntrega
         })
       })
 
       if (!response.ok) {
-        throw new Error('Error al crear el pedido')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Error al crear el pedido')
       }
 
       const data = await response.json()
-      // Aquí podrías redirigir a una página de confirmación o al listado de pedidos
       navigate('/pedidos')
     } catch (e) {
       if (e instanceof Error) {

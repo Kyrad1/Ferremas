@@ -10,6 +10,7 @@ interface Pedido {
   estado: string;
   fechaCreacion: string;
   total: number;
+  clienteId: string;
   articulo: {
     id: string;
     nombre: string;
@@ -29,14 +30,15 @@ function PedidoDetalle() {
     const fetchPedido = async () => {
       try {
         const baseUrl = import.meta.env.VITE_API_URL
-        const response = await fetch(`${baseUrl}/api/pedidos/${id}`, {
+        const response = await fetch(`${baseUrl}/data/pedidos/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         })
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          const errorData = await response.json()
+          throw new Error(errorData.message || 'Error al cargar el pedido')
         }
 
         const data = await response.json()

@@ -398,55 +398,25 @@ app.post("/api/vendedores/:id/contacto", verifyToken, async (req, res) => {
   }
 })
 
-// Endpoint para crear un pedido monoproducto
-app.post("/api/pedidos", verifyToken, checkRole(['orders:create']), async (req, res) => {
+// Endpoint para crear un pedido nuevo
+app.post("/data/pedidos/nuevo", verifyToken, checkRole(['orders:create']), async (req, res) => {
   try {
     const { articuloId, cantidad, direccionEntrega } = req.body
     const usuario = req.user
 
-    // Verificar que el artículo existe y hay stock
-    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
-    const response = await axios.get(apiUrl, {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/pedidos/nuevo"
+    const response = await axios.post(apiUrl, {
+      articuloId,
+      cantidad,
+      direccionEntrega,
+      clienteId: usuario.id
+    }, {
       headers: {
         "x-authentication": EXTERNAL_API_KEY,
       },
     })
 
-    const articulo = response.data.find(art => art.id === articuloId)
-    
-    if (!articulo) {
-      return res.status(404).json({ message: "Artículo no encontrado" })
-    }
-
-    if (articulo.stock < cantidad) {
-      return res.status(400).json({ 
-        message: "Stock insuficiente",
-        stockDisponible: articulo.stock
-      })
-    }
-
-    // Calcular el total
-    const total = articulo.precio * cantidad
-
-    // Aquí normalmente guardaríamos el pedido en una base de datos
-    // Como es un ejemplo, solo simularemos la respuesta
-    res.json({
-      id: `PED-${Date.now()}`,
-      cliente: {
-        id: usuario.id,
-        email: usuario.email
-      },
-      articulo: {
-        id: articulo.id,
-        nombre: articulo.nombre,
-        precio: articulo.precio
-      },
-      cantidad,
-      total,
-      direccionEntrega,
-      estado: "pendiente_pago",
-      fechaCreacion: new Date().toISOString()
-    })
+    res.json(response.data)
   } catch (error) {
     console.error("Error creating order:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
