@@ -28,6 +28,7 @@ function ArticuloDetalle() {
   const [articulo, setArticulo] = useState<Articulo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [formErrors, setFormErrors] = useState<{
     cantidad?: string;
     direccionEntrega?: string;
@@ -115,7 +116,7 @@ function ArticuloDetalle() {
         throw new Error(data.message || 'Error al crear el pedido')
       }
 
-      navigate('/pedidos')
+      setSuccess(true)
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message)
@@ -129,6 +130,39 @@ function ArticuloDetalle() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8 flex items-center justify-center">
+        <div className="max-w-md w-full bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 text-center">
+          <div className="mb-6">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-green-400 mb-2">¡Pedido Creado!</h2>
+            <p className="text-gray-300 mb-6">Tu pedido ha sido creado exitosamente.</p>
+          </div>
+          
+          <div className="space-y-4">
+            <button
+              onClick={() => navigate('/pedidos')}
+              className="w-full bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition-colors"
+            >
+              Ver mis pedidos
+            </button>
+            <button
+              onClick={() => navigate('/articulos')}
+              className="w-full bg-purple-500 text-white rounded-lg px-4 py-2 hover:bg-purple-600 transition-colors"
+            >
+              Seguir comprando
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
