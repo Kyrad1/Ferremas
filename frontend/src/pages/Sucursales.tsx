@@ -17,9 +17,7 @@ function Sucursales() {
   useEffect(() => {
     const fetchSucursales = async () => {
       try {
-        const baseUrl = import.meta.env.PROD 
-          ? import.meta.env.TARGET_URL 
-          : '';
+        const baseUrl = import.meta.env.VITE_API_URL;
         const response = await fetch(`${baseUrl}/api/sucursales`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
