@@ -398,25 +398,59 @@ app.post("/api/vendedores/:id/contacto", verifyToken, async (req, res) => {
   }
 })
 
+// Simulación de almacenamiento de pedidos
+const pedidosSimulados = new Map()
+
 // Endpoint para crear un pedido nuevo
 app.post("/data/pedidos/nuevo", verifyToken, checkRole(['orders:create']), async (req, res) => {
   try {
     const { articuloId, cantidad, direccionEntrega } = req.body
     const usuario = req.user
 
-    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/pedidos/nuevo"
-    const response = await axios.post(apiUrl, {
-      articuloId,
-      cantidad,
-      direccionEntrega,
-      clienteId: usuario.id
-    }, {
+    // Verificar que el artículo existe y hay stock
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
+    const response = await axios.get(apiUrl, {
       headers: {
         "x-authentication": EXTERNAL_API_KEY,
       },
     })
 
-    res.json(response.data)
+    const articulo = response.data.find(art => art.id === articuloId)
+    
+    if (!articulo) {
+      return res.status(404).json({ message: "Artículo no encontrado" })
+    }
+
+    if (articulo.stock < cantidad) {
+      return res.status(400).json({ 
+        message: "Stock insuficiente",
+        stockDisponible: articulo.stock
+      })
+    }
+
+    // Crear pedido simulado
+    const pedidoId = `PED-${Date.now()}`
+    const nuevoPedido = {
+      id: pedidoId,
+      articuloId,
+      cantidad,
+      direccionEntrega,
+      estado: "pendiente",
+      fechaCreacion: new Date().toISOString(),
+      total: articulo.precio * cantidad,
+      clienteId: usuario.id,
+      articulo: {
+        id: articulo.id,
+        nombre: articulo.nombre,
+        precio: articulo.precio,
+        descripcion: articulo.descripcion
+      }
+    }
+
+    // Guardar en el almacenamiento simulado
+    pedidosSimulados.set(pedidoId, nuevoPedido)
+
+    res.json(nuevoPedido)
   } catch (error) {
     console.error("Error creating order:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
@@ -427,34 +461,19 @@ app.post("/data/pedidos/nuevo", verifyToken, checkRole(['orders:create']), async
 })
 
 // Endpoint para obtener los pedidos del usuario
-app.get("/api/pedidos", verifyToken, checkRole(['orders:read']), async (req, res) => {
+app.get("/data/pedidos", verifyToken, checkRole(['orders:read']), async (req, res) => {
   try {
     const usuario = req.user
+    
+    // Filtrar pedidos del usuario
+    const pedidosUsuario = Array.from(pedidosSimulados.values())
+      .filter(pedido => pedido.clienteId === usuario.id)
+      .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
 
-    // Aquí normalmente consultaríamos los pedidos en una base de datos
-    // Como es un ejemplo, solo simularemos la respuesta con un pedido de ejemplo
-    res.json([
-      {
-        id: "PED-EJEMPLO",
-        cliente: {
-          id: usuario.id,
-          email: usuario.email
-        },
-        articulo: {
-          id: "ART001",
-          nombre: "Martillo Profesional",
-          precio: 15990
-        },
-        cantidad: 1,
-        total: 15990,
-        direccionEntrega: "Av. Ejemplo 123",
-        estado: "entregado",
-        fechaCreacion: "2024-03-15T10:30:00Z"
-      }
-    ])
+    res.json(pedidosUsuario)
   } catch (error) {
-    console.error("Error fetching orders:", error.response ? error.response.data : error.message)
-    res.status(error.response ? error.response.status : 500).json({
+    console.error("Error fetching orders:", error)
+    res.status(500).json({
       message: "Error al obtener los pedidos",
       error: error.message,
     })
@@ -462,37 +481,26 @@ app.get("/api/pedidos", verifyToken, checkRole(['orders:read']), async (req, res
 })
 
 // Endpoint para obtener un pedido específico
-app.get("/api/pedidos/:id", verifyToken, checkRole(['orders:read']), async (req, res) => {
+app.get("/data/pedidos/:id", verifyToken, checkRole(['orders:read']), async (req, res) => {
   try {
     const pedidoId = req.params.id
     const usuario = req.user
 
-    // Aquí normalmente consultaríamos el pedido en una base de datos
-    // Como es un ejemplo, solo simularemos la respuesta
-    if (pedidoId === "PED-EJEMPLO") {
-      res.json({
-        id: "PED-EJEMPLO",
-        cliente: {
-          id: usuario.id,
-          email: usuario.email
-        },
-        articulo: {
-          id: "ART001",
-          nombre: "Martillo Profesional",
-          precio: 15990
-        },
-        cantidad: 1,
-        total: 15990,
-        direccionEntrega: "Av. Ejemplo 123",
-        estado: "entregado",
-        fechaCreacion: "2024-03-15T10:30:00Z"
-      })
-    } else {
-      res.status(404).json({ message: "Pedido no encontrado" })
+    const pedido = pedidosSimulados.get(pedidoId)
+    
+    if (!pedido) {
+      return res.status(404).json({ message: "Pedido no encontrado" })
     }
+
+    // Verificar que el pedido pertenece al usuario
+    if (pedido.clienteId !== usuario.id && usuario.role !== 'admin') {
+      return res.status(403).json({ message: "No tienes permiso para ver este pedido" })
+    }
+
+    res.json(pedido)
   } catch (error) {
-    console.error("Error fetching order:", error.response ? error.response.data : error.message)
-    res.status(error.response ? error.response.status : 500).json({
+    console.error("Error fetching order:", error)
+    res.status(500).json({
       message: "Error al obtener el pedido",
       error: error.message,
     })

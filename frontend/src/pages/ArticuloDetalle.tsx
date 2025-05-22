@@ -69,8 +69,25 @@ function ArticuloDetalle() {
     e.preventDefault()
     if (!articulo) return
 
+    // Validación de datos
+    if (!pedido.cantidad || pedido.cantidad < 1) {
+      setError("La cantidad debe ser mayor a 0")
+      return
+    }
+
+    if (!pedido.direccionEntrega.trim()) {
+      setError("La dirección de entrega es requerida")
+      return
+    }
+
     try {
       const baseUrl = import.meta.env.VITE_API_URL
+      console.log('Enviando pedido:', {
+        articuloId: articulo.id,
+        cantidad: pedido.cantidad,
+        direccionEntrega: pedido.direccionEntrega
+      })
+
       const response = await fetch(`${baseUrl}/data/pedidos/nuevo`, {
         method: 'POST',
         headers: {
@@ -79,19 +96,22 @@ function ArticuloDetalle() {
         },
         body: JSON.stringify({
           articuloId: articulo.id,
-          cantidad: pedido.cantidad,
-          direccionEntrega: pedido.direccionEntrega
+          cantidad: Number(pedido.cantidad),
+          direccionEntrega: pedido.direccionEntrega.trim()
         })
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Error al crear el pedido')
+        console.error('Error response:', data)
+        throw new Error(data.message || 'Error al crear el pedido')
       }
 
-      const data = await response.json()
+      console.log('Pedido creado:', data)
       navigate('/pedidos')
     } catch (e) {
+      console.error('Error completo:', e)
       if (e instanceof Error) {
         setError(e.message)
       } else {
