@@ -7,6 +7,7 @@ import ArticuloDetalle from "./pages/ArticuloDetalle"
 import Sucursales from "./pages/Sucursales"
 import Pedidos from "./pages/Pedidos"
 import PedidoDetalle from "./pages/PedidoDetalle"
+import PagarPedido from "./pages/PagarPedido"
 import Login from "./pages/Login"
 
 interface ProtectedRouteProps {
@@ -82,6 +83,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PedidoDetalle />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pedidos/:id/pagar"
+            element={
+              <ProtectedRoute>
+                <PagarPedido />
               </ProtectedRoute>
             }
           />

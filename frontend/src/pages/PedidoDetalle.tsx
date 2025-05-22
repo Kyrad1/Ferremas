@@ -133,9 +133,19 @@ function PedidoDetalle() {
               <h2 className="text-xl font-semibold text-blue-400 mb-4">
                 Estado del Pedido
               </h2>
-              <p className="text-lg capitalize text-white">
-                {pedido.estado}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-lg capitalize text-white">
+                  {pedido.estado}
+                </p>
+                {pedido.estado.toLowerCase() === 'pendiente' && (
+                  <Link
+                    to={`/pedidos/${pedido.id}/pagar`}
+                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                  >
+                    Pagar ahora
+                  </Link>
+                )}
+              </div>
             </div>
 
             <div className="bg-gray-700/30 rounded-xl p-6">
