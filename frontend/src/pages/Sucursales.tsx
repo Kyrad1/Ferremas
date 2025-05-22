@@ -17,7 +17,10 @@ function Sucursales() {
   useEffect(() => {
     const fetchSucursales = async () => {
       try {
-        const response = await fetch("/api/sucursales")
+        const baseUrl = import.meta.env.PROD 
+          ? import.meta.env.TARGET_URL 
+          : '';
+        const response = await fetch(`${baseUrl}/api/sucursales`)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
