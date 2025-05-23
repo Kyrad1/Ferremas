@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { useCurrency } from "../context/CurrencyContext"
 import { PageLayout } from "../components/PageLayout"
@@ -156,18 +156,18 @@ function ArticuloDetalle() {
               </svg>
             </div>
             <div className="space-y-4">
-              <button
-                onClick={() => window.location.href = '/pedidos'}
-                className="w-full bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition-colors"
+              <Link
+                to="/pedidos"
+                className="block w-full bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 transition-colors"
               >
                 Ver mis pedidos
-              </button>
-              <button
-                onClick={() => window.location.href = '/articulos'}
-                className="w-full bg-purple-500 text-white rounded-lg px-4 py-2 hover:bg-purple-600 transition-colors"
+              </Link>
+              <Link
+                to="/articulos"
+                className="block w-full bg-purple-500 text-white rounded-lg px-4 py-2 hover:bg-purple-600 transition-colors"
               >
                 Seguir comprando
-              </button>
+              </Link>
             </div>
           </div>
         </div>
