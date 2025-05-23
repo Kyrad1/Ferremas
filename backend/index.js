@@ -122,33 +122,7 @@ app.get("/api/auth/verify", verifyToken, (req, res) => {
   });
 });
 
-// Endpoint para obtener los artículos
-app.get("/api/articulos", verifyToken, checkRole(['products:read']), async (req, res) => {
-  try {
-    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
-
-    const response = await axios.get(apiUrl, {
-      headers: {
-        "x-authentication": EXTERNAL_API_KEY,
-      },
-    })
-
-    // Agregar precios en USD a todos los artículos
-    const articlesWithUSD = await addUSDPricesToArticles(response.data);
-    res.json(articlesWithUSD)
-  } catch (error) {
-    console.error(
-      "Error fetching data:",
-      error.response ? error.response.data : error.message
-    )
-    res.status(error.response ? error.response.status : 500).json({
-      message: "Error al obtener los datos de la API externa",
-      error: error.message,
-    })
-  }
-})
-
-// Endpoint para obtener las sucursales
+// Endpoint para obtener las sucursales (accesible para clientes)
 app.get("/api/sucursales", verifyToken, async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/sucursales"
@@ -172,10 +146,34 @@ app.get("/api/sucursales", verifyToken, async (req, res) => {
   }
 })
 
-// Endpoint para obtener los vendedores
+// Endpoint para obtener los vendedores (solo administradores de tienda)
 app.get("/api/vendedores", verifyToken, checkRole(['sellers:read']), async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/vendedores"
+
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    res.json(response.data)
+  } catch (error) {
+    console.error(
+      "Error fetching data:",
+      error.response ? error.response.data : error.message
+    )
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los datos de la API externa",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener los artículos (accesible para todos los usuarios autenticados)
+app.get("/api/articulos", verifyToken, checkRole(['products:read']), async (req, res) => {
+  try {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
 
     const response = await axios.get(apiUrl, {
       headers: {
@@ -295,8 +293,8 @@ app.post("/api/articulos/:id/promocion", verifyToken, checkRole(['products:write
   }
 })
 
-// Endpoint para obtener solo productos en promoción
-app.get("/api/articulos/promociones", verifyToken, checkRole(['products:read']), async (req, res) => {
+// Endpoint para obtener solo productos en promoción (accesible para clientes)
+app.get("/api/articulos/promociones", verifyToken, checkRole(['promotions:read']), async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/articulos"
     const response = await axios.get(apiUrl, {
@@ -307,10 +305,7 @@ app.get("/api/articulos/promociones", verifyToken, checkRole(['products:read']),
 
     // Filtramos los artículos que están en promoción
     const promociones = response.data.filter(art => art.precio.toString().endsWith('99'))
-    
-    // Agregar precios en USD a las promociones
-    const promocionesWithUSD = await addUSDPricesToArticles(promociones);
-    res.json(promocionesWithUSD)
+    res.json(promociones)
   } catch (error) {
     console.error("Error fetching data:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
@@ -419,7 +414,7 @@ app.post("/api/vendedores/:id/contacto", verifyToken, async (req, res) => {
 // Simulación de almacenamiento de pedidos
 const pedidosSimulados = new Map()
 
-// Endpoint para crear un pedido nuevo
+// Endpoint para crear un pedido nuevo (accesible para clientes)
 app.post("/data/pedidos/nuevo", verifyToken, checkRole(['orders:create']), async (req, res) => {
   try {
     const { articuloId, cantidad, direccionEntrega } = req.body

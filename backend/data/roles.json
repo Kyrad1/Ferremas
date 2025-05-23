@@ -9,22 +9,26 @@
     "permissions": [
       "products:read",
       "products:write",
+      "products:create",
       "promotions:read",
       "promotions:write",
-      "inventory:read"
+      "inventory:read",
+      "inventory:write"
     ],
-    "description": "Gestión de productos y promociones"
+    "description": "Gestión y creación de productos en el catálogo"
   },
   "store_manager": {
-    "name": "Jefe de tienda",
+    "name": "Administrador de tienda",
     "permissions": [
       "sellers:read",
       "sellers:write",
       "orders:read",
       "orders:write",
+      "branches:read",
+      "branches:write",
       "reports:read"
     ],
-    "description": "Gestión de vendedores y pedidos"
+    "description": "Gestión de vendedores y sucursales"
   },
   "warehouse": {
     "name": "Bodega",
@@ -41,7 +45,10 @@
     "name": "Cliente",
     "permissions": [
       "products:read",
+      "promotions:read",
+      "branches:read",
       "orders:create",
+      "orders:read",
       "profile:read",
       "profile:write"
     ],
