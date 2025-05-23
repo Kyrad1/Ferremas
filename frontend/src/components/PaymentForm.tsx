@@ -9,7 +9,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 // Asegúrate de reemplazar esto con tu clave pública de Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-
+//hola esto es un update
 interface PaymentFormProps {
   clientSecret: string;
   pedidoId: string;
