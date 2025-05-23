@@ -214,7 +214,9 @@ app.get("/api/articulos", verifyToken, checkRole(['products:read']), async (req,
       },
     })
 
-    res.json(response.data)
+    // Agregar precios en USD a todos los artículos
+    const articulosWithUSD = await addUSDPricesToArticles(response.data);
+    res.json(articulosWithUSD)
   } catch (error) {
     console.error(
       "Error fetching data:",
