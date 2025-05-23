@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const users = require('./data/users.json')
 const roles = require('./data/roles.json')
+const currencyRoutes = require('./routes/currencyRoutes')
+const { addUSDPricesToArticles } = require('./controllers/currencyController')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -26,6 +28,9 @@ app.use('/api/payments/webhook', express.raw({ type: 'application/json' }))
 
 // Parseo de JSON para todas las demás rutas
 app.use(express.json())
+
+// Rutas de conversión de moneda
+app.use('/api/currency', currencyRoutes)
 
 // Middleware de autenticación
 const verifyToken = (req, res, next) => {
@@ -128,7 +133,9 @@ app.get("/api/articulos", verifyToken, checkRole(['products:read']), async (req,
       },
     })
 
-    res.json(response.data)
+    // Agregar precios en USD a todos los artículos
+    const articlesWithUSD = await addUSDPricesToArticles(response.data);
+    res.json(articlesWithUSD)
   } catch (error) {
     console.error(
       "Error fetching data:",
@@ -205,7 +212,9 @@ app.get("/api/articulos/:id", verifyToken, checkRole(['products:read']), async (
       return res.status(404).json({ message: "Artículo no encontrado" })
     }
 
-    res.json(articulo)
+    // Agregar precio en USD al artículo
+    const [articuloWithUSD] = await addUSDPricesToArticles([articulo]);
+    res.json(articuloWithUSD)
   } catch (error) {
     console.error("Error fetching data:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
@@ -297,10 +306,11 @@ app.get("/api/articulos/promociones", verifyToken, checkRole(['products:read']),
     })
 
     // Filtramos los artículos que están en promoción
-    // Como no tenemos una base de datos, simularemos que los artículos con precio terminado en 99 están en promoción
     const promociones = response.data.filter(art => art.precio.toString().endsWith('99'))
-
-    res.json(promociones)
+    
+    // Agregar precios en USD a las promociones
+    const promocionesWithUSD = await addUSDPricesToArticles(promociones);
+    res.json(promocionesWithUSD)
   } catch (error) {
     console.error("Error fetching data:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
@@ -321,12 +331,13 @@ app.get("/api/articulos/novedades", verifyToken, checkRole(['products:read']), a
     })
 
     // Filtramos los artículos que son novedades
-    // Como no tenemos una base de datos, simularemos que los artículos más caros son novedades
     const novedades = response.data
       .sort((a, b) => b.precio - a.precio)
       .slice(0, 5)
 
-    res.json(novedades)
+    // Agregar precios en USD a las novedades
+    const novedadesWithUSD = await addUSDPricesToArticles(novedades);
+    res.json(novedadesWithUSD)
   } catch (error) {
     console.error("Error fetching data:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
