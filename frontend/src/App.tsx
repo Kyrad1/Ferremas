@@ -6,6 +6,7 @@ import Home from "./pages/Home"
 import Articulos from "./pages/Articulos"
 import ArticuloDetalle from "./pages/ArticuloDetalle"
 import Sucursales from "./pages/Sucursales"
+import Vendedores from "./pages/Vendedores"
 import Pedidos from "./pages/Pedidos"
 import PedidoDetalle from "./pages/PedidoDetalle"
 import PagarPedido from "./pages/PagarPedido"
@@ -15,9 +16,10 @@ import Login from "./pages/Login"
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: string[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -30,6 +32,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  if (requiredRole && !requiredRole.includes(user.role)) {
+    return <Navigate to="/" />;
   }
 
   return <>{children}</>;
@@ -71,6 +77,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Sucursales />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendedores"
+              element={
+                <ProtectedRoute requiredRole={['admin', 'store_manager']}>
+                  <Vendedores />
                 </ProtectedRoute>
               }
             />
