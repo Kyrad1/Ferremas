@@ -123,7 +123,7 @@ app.get("/api/auth/verify", verifyToken, (req, res) => {
 });
 
 // Endpoint para obtener las sucursales (accesible para clientes)
-app.get("/api/sucursales", verifyToken, async (req, res) => {
+app.get("/api/sucursales", verifyToken, checkRole(['branches:read']), async (req, res) => {
   try {
     const apiUrl = "https://ea2p2assets-production.up.railway.app/data/sucursales"
 
@@ -133,12 +133,45 @@ app.get("/api/sucursales", verifyToken, async (req, res) => {
       },
     })
 
-    res.json(response.data)
+    // Mantenemos solo la información relevante de las sucursales
+    const sucursalesFiltradas = response.data.map(sucursal => ({
+      id: sucursal.id,
+      localidad: sucursal.localidad
+    }));
+
+    res.json(sucursalesFiltradas)
   } catch (error) {
     console.error(
       "Error fetching data:",
       error.response ? error.response.data : error.message
     )
+    res.status(error.response ? error.response.status : 500).json({
+      message: "Error al obtener los datos de la API externa",
+      error: error.message,
+    })
+  }
+})
+
+// Endpoint para obtener los vendedores de una sucursal (solo administradores de tienda)
+app.get("/api/sucursales/:id/vendedores", verifyToken, checkRole(['sellers:read']), async (req, res) => {
+  try {
+    const apiUrl = "https://ea2p2assets-production.up.railway.app/data/sucursales"
+    const response = await axios.get(apiUrl, {
+      headers: {
+        "x-authentication": EXTERNAL_API_KEY,
+      },
+    })
+
+    const sucursal = response.data.find(s => s.id === req.params.id);
+    
+    if (!sucursal) {
+      return res.status(404).json({ message: "Sucursal no encontrada" });
+    }
+
+    // Devolvemos solo los vendedores de la sucursal
+    res.json(sucursal.vendedores || []);
+  } catch (error) {
+    console.error("Error fetching data:", error.response ? error.response.data : error.message)
     res.status(error.response ? error.response.status : 500).json({
       message: "Error al obtener los datos de la API externa",
       error: error.message,
