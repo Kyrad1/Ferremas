@@ -23,10 +23,6 @@ function Sucursales() {
   const isAdmin = user?.role === 'admin' || user?.role === 'store_manager';
 
   useEffect(() => {
-    console.log('Estado de sucursales actualizado:', sucursales);
-  }, [sucursales]);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
@@ -41,6 +37,7 @@ function Sucursales() {
           throw new Error(`HTTP error! status: ${sucursalesResponse.status}`);
         }
         const sucursalesData = await sucursalesResponse.json();
+        setSucursales(sucursalesData);
         
         // Solo fetch vendedores si el usuario es admin o store_manager
         if (isAdmin) {
@@ -55,10 +52,7 @@ function Sucursales() {
           const vendedoresData = await vendedoresResponse.json();
           setVendedores(vendedoresData);
         }
-        
-        console.log('Datos de sucursales:', sucursalesData);
       } catch (e) {
-        console.error('Error completo:', e);
         if (e instanceof Error) {
           setError(e.message);
         } else {
