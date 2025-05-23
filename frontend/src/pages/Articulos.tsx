@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { useCurrency } from "../context/CurrencyContext"
+import { CurrencySelector } from "../components/CurrencySelector"
 
 interface Articulo {
   id: string;
   nombre: string;
   descripcion: string;
   precio: number;
+  precio_usd?: number;
   stock: number;
   categoria: string;
   subcategoria: string;
@@ -14,6 +17,10 @@ interface Articulo {
   isNovedad?: boolean;
   isPromocion?: boolean;
   descuento?: number;
+  exchange_rate?: {
+    CLP_USD: number;
+    timestamp: string;
+  };
 }
 
 function Articulos() {
@@ -21,6 +28,7 @@ function Articulos() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { token } = useAuth();
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const fetchArticulos = async () => {
@@ -71,7 +79,7 @@ function Articulos() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-8 flex justify-between items-center">
           <Link
             to="/"
             className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
@@ -91,6 +99,7 @@ function Articulos() {
             </svg>
             Volver al inicio
           </Link>
+          <CurrencySelector />
         </div>
 
         <header className="mb-12 text-center">
@@ -115,7 +124,7 @@ function Articulos() {
                   <p>{articulo.descripcion}</p>
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-blue-400">
-                      ${articulo.precio.toFixed(2)}
+                      {formatPrice(articulo.precio, articulo.precio_usd)}
                     </p>
                     <p className={`text-sm ${articulo.stock > 10 ? 'text-green-400' : 'text-orange-400'}`}>
                       Stock: {articulo.stock}

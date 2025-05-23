@@ -1,6 +1,7 @@
 import React from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { AuthProvider, useAuth } from "./context/AuthContext"
+import { CurrencyProvider } from "./context/CurrencyContext"
 import Home from "./pages/Home"
 import Articulos from "./pages/Articulos"
 import ArticuloDetalle from "./pages/ArticuloDetalle"
@@ -37,83 +38,85 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/articulos"
-            element={
-              <ProtectedRoute>
-                <Articulos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/articulos/:id"
-            element={
-              <ProtectedRoute>
-                <ArticuloDetalle />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sucursales"
-            element={
-              <ProtectedRoute>
-                <Sucursales />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pedidos"
-            element={
-              <ProtectedRoute>
-                <Pedidos />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pedidos/:id"
-            element={
-              <ProtectedRoute>
-                <PedidoDetalle />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pedidos/:id/pagar"
-            element={
-              <ProtectedRoute>
-                <PagarPedido />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pago-exitoso"
-            element={
-              <ProtectedRoute>
-                <PagoExitoso />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pago-fallido"
-            element={
-              <ProtectedRoute>
-                <PagoFallido />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+      <CurrencyProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articulos"
+              element={
+                <ProtectedRoute>
+                  <Articulos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/articulos/:id"
+              element={
+                <ProtectedRoute>
+                  <ArticuloDetalle />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sucursales"
+              element={
+                <ProtectedRoute>
+                  <Sucursales />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pedidos"
+              element={
+                <ProtectedRoute>
+                  <Pedidos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pedidos/:id"
+              element={
+                <ProtectedRoute>
+                  <PedidoDetalle />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pedidos/:id/pagar"
+              element={
+                <ProtectedRoute>
+                  <PagarPedido />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pago-exitoso"
+              element={
+                <ProtectedRoute>
+                  <PagoExitoso />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pago-fallido"
+              element={
+                <ProtectedRoute>
+                  <PagoFallido />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </CurrencyProvider>
     </AuthProvider>
   )
 }

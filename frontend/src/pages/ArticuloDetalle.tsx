@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { useCurrency } from "../context/CurrencyContext"
+import { CurrencySelector } from "../components/CurrencySelector"
 
 interface Articulo {
   id: string;
   nombre: string;
   descripcion: string;
   precio: number;
+  precio_usd?: number;
   stock: number;
   categoria: string;
   subcategoria: string;
@@ -14,6 +17,10 @@ interface Articulo {
   isNovedad?: boolean;
   isPromocion?: boolean;
   descuento?: number;
+  exchange_rate?: {
+    CLP_USD: number;
+    timestamp: string;
+  };
 }
 
 interface PedidoForm {
@@ -25,6 +32,7 @@ function ArticuloDetalle() {
   const { id } = useParams<{ id: string }>()
   const { token } = useAuth()
   const navigate = useNavigate()
+  const { formatPrice } = useCurrency()
   const [articulo, setArticulo] = useState<Articulo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -182,13 +190,14 @@ function ArticuloDetalle() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-8 flex justify-between items-center">
           <Link
             to="/articulos"
             className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2"
           >
             ← Volver a artículos
           </Link>
+          <CurrencySelector />
         </div>
 
         {error && (
@@ -198,90 +207,101 @@ function ArticuloDetalle() {
         )}
 
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4">
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-6">
             {articulo.nombre}
           </h1>
 
-          <div className="space-y-4 text-gray-300">
-            <p className="text-lg">{articulo.descripcion}</p>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <p className="text-gray-300">{articulo.descripcion}</p>
+              
+              <div className="bg-gray-700/30 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Precio:</span>
+                  <span className="text-2xl font-bold text-blue-400">
+                    {formatPrice(articulo.precio, articulo.precio_usd)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Stock:</span>
+                  <span className={`${articulo.stock > 10 ? 'text-green-400' : 'text-orange-400'}`}>
+                    {articulo.stock} unidades
+                  </span>
+                </div>
+              </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-blue-400">
-                  ${articulo.precio.toFixed(2)}
+              <div className="space-y-2 text-sm">
+                <p className="text-gray-400">
+                  <span className="font-medium">Categoría:</span> {articulo.categoria}
                 </p>
-                {articulo.isPromocion && (
-                  <p className="text-sm text-green-400">
-                    ¡En promoción! {articulo.descuento}% de descuento
-                  </p>
-                )}
+                <p className="text-gray-400">
+                  <span className="font-medium">Subcategoría:</span> {articulo.subcategoria}
+                </p>
+                <p className="text-gray-400">
+                  <span className="font-medium">Marca:</span> {articulo.marca}
+                </p>
               </div>
-              <p className={`text-sm ${articulo.stock > 10 ? 'text-green-400' : 'text-orange-400'}`}>
-                Stock disponible: {articulo.stock} unidades
-              </p>
+
+              {(articulo.isNovedad || articulo.isPromocion) && (
+                <div className="flex gap-2">
+                  {articulo.isNovedad && (
+                    <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
+                      Novedad
+                    </span>
+                  )}
+                  {articulo.isPromocion && (
+                    <span className="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-sm">
+                      {articulo.descuento}% OFF
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-400">Categoría</p>
-                <p>{articulo.categoria}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Subcategoría</p>
-                <p>{articulo.subcategoria}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Marca</p>
-                <p>{articulo.marca}</p>
-              </div>
+            <div className="bg-gray-700/30 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-200 mb-4">Realizar Pedido</h2>
+              <form onSubmit={handlePedidoSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="cantidad" className="block text-sm font-medium text-gray-400 mb-1">
+                    Cantidad
+                  </label>
+                  <input
+                    type="number"
+                    id="cantidad"
+                    min="1"
+                    value={pedido.cantidad}
+                    onChange={(e) => setPedido({ ...pedido, cantidad: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {formErrors.cantidad && (
+                    <p className="mt-1 text-sm text-red-400">{formErrors.cantidad}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="direccionEntrega" className="block text-sm font-medium text-gray-400 mb-1">
+                    Dirección de Entrega
+                  </label>
+                  <textarea
+                    id="direccionEntrega"
+                    value={pedido.direccionEntrega}
+                    onChange={(e) => setPedido({ ...pedido, direccionEntrega: e.target.value })}
+                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  {formErrors.direccionEntrega && (
+                    <p className="mt-1 text-sm text-red-400">{formErrors.direccionEntrega}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg px-4 py-2 hover:from-blue-600 hover:to-purple-600 transition-all duration-200 font-medium"
+                >
+                  Crear Pedido
+                </button>
+              </form>
             </div>
-
-            <form onSubmit={handlePedidoSubmit} className="mt-8 space-y-4">
-              <div>
-                <label htmlFor="cantidad" className="block text-sm font-medium text-gray-400">
-                  Cantidad
-                </label>
-                <input
-                  type="number"
-                  id="cantidad"
-                  min="1"
-                  max={articulo.stock}
-                  value={pedido.cantidad}
-                  onChange={(e) => setPedido({ ...pedido, cantidad: parseInt(e.target.value) })}
-                  className={`mt-1 block w-full rounded-md bg-gray-700/50 border ${
-                    formErrors.cantidad ? 'border-red-500' : 'border-gray-600'
-                  } text-gray-300 px-3 py-2`}
-                />
-                {formErrors.cantidad && (
-                  <p className="mt-1 text-sm text-red-400">{formErrors.cantidad}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="direccion" className="block text-sm font-medium text-gray-400">
-                  Dirección de entrega
-                </label>
-                <textarea
-                  id="direccion"
-                  value={pedido.direccionEntrega}
-                  onChange={(e) => setPedido({ ...pedido, direccionEntrega: e.target.value })}
-                  className={`mt-1 block w-full rounded-md bg-gray-700/50 border ${
-                    formErrors.direccionEntrega ? 'border-red-500' : 'border-gray-600'
-                  } text-gray-300 px-3 py-2`}
-                  rows={3}
-                />
-                {formErrors.direccionEntrega && (
-                  <p className="mt-1 text-sm text-red-400">{formErrors.direccionEntrega}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg px-4 py-2 hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
-              >
-                Crear Pedido
-              </button>
-            </form>
           </div>
         </div>
       </div>
