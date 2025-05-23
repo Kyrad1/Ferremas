@@ -28,35 +28,38 @@ function Articulos() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { token } = useAuth();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency } = useCurrency();
 
-  useEffect(() => {
-    const fetchArticulos = async () => {
-      try {
-        const baseUrl = import.meta.env.VITE_API_URL;
-        
-        const response = await fetch(`${baseUrl}/api/articulos`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+  const fetchArticulos = async () => {
+    try {
+      setLoading(true);
+      const baseUrl = import.meta.env.VITE_API_URL;
+      
+      const response = await fetch(`${baseUrl}/api/articulos`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-        const data = await response.json()
-        setArticulos(data)
-      } catch (e) {
-        if (e instanceof Error) {
-          setError(e.message)
-        } else {
-          setError("An unknown error occurred")
-        }
-      } finally {
-        setLoading(false)
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+      const data = await response.json()
+      setArticulos(data)
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message)
+      } else {
+        setError("An unknown error occurred")
+      }
+    } finally {
+      setLoading(false)
     }
+  }
+
+  // Efecto para cargar los artículos inicialmente y cuando cambie la moneda
+  useEffect(() => {
     fetchArticulos()
-  }, [token])
+  }, [token, currency]) // Agregamos currency como dependencia
 
   if (loading)
     return (
