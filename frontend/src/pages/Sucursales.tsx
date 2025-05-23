@@ -19,7 +19,8 @@ function Sucursales() {
   const [vendedores, setVendedores] = useState<Vendedor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const isAdmin = user?.role === 'admin' || user?.role === 'store_manager';
 
   useEffect(() => {
     console.log('Estado de sucursales actualizado:', sucursales);
@@ -41,22 +42,21 @@ function Sucursales() {
         }
         const sucursalesData = await sucursalesResponse.json();
         
-        // Fetch vendedores
-        const vendedoresResponse = await fetch(`${baseUrl}/api/vendedores`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        // Solo fetch vendedores si el usuario es admin o store_manager
+        if (isAdmin) {
+          const vendedoresResponse = await fetch(`${baseUrl}/api/vendedores`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (!vendedoresResponse.ok) {
+            throw new Error(`HTTP error! status: ${vendedoresResponse.status}`);
           }
-        });
-        if (!vendedoresResponse.ok) {
-          throw new Error(`HTTP error! status: ${vendedoresResponse.status}`);
+          const vendedoresData = await vendedoresResponse.json();
+          setVendedores(vendedoresData);
         }
-        const vendedoresData = await vendedoresResponse.json();
         
         console.log('Datos de sucursales:', sucursalesData);
-        console.log('Datos de vendedores:', vendedoresData);
-        
-        setSucursales(sucursalesData);
-        setVendedores(vendedoresData);
       } catch (e) {
         console.error('Error completo:', e);
         if (e instanceof Error) {
@@ -70,7 +70,7 @@ function Sucursales() {
     };
     
     fetchData();
-  }, [token]);
+  }, [token, isAdmin]);
 
   const getVendedoresPorSucursal = (sucursalId: string) => {
     return vendedores.filter(vendedor => vendedor.sucursal === sucursalId);
@@ -115,7 +115,7 @@ function Sucursales() {
       {sucursales.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {sucursales.map((sucursal) => {
-            const vendedoresSucursal = getVendedoresPorSucursal(sucursal.id);
+            const vendedoresSucursal = isAdmin ? getVendedoresPorSucursal(sucursal.id) : [];
             return (
               <div
                 key={sucursal.id}
@@ -133,32 +133,34 @@ function Sucursales() {
                     <span>{sucursal.localidad}</span>
                   </div>
                   
-                  {/* Sección de Vendedores */}
-                  <div className="mt-6 pt-4 border-t border-gray-700/50">
-                    <h3 className="text-lg font-semibold text-gray-300 mb-3">Vendedores</h3>
-                    <div className="space-y-2">
-                      {vendedoresSucursal.length > 0 ? (
-                        vendedoresSucursal.map((vendedor) => (
-                          <div key={vendedor.id} className="bg-gray-700/30 rounded-lg p-3">
-                            <div className="flex items-center space-x-2">
-                              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              <span className="text-gray-300">{vendedor.nombre}</span>
+                  {/* Sección de Vendedores - Solo visible para admin y store_manager */}
+                  {isAdmin && (
+                    <div className="mt-6 pt-4 border-t border-gray-700/50">
+                      <h3 className="text-lg font-semibold text-gray-300 mb-3">Vendedores</h3>
+                      <div className="space-y-2">
+                        {vendedoresSucursal.length > 0 ? (
+                          vendedoresSucursal.map((vendedor) => (
+                            <div key={vendedor.id} className="bg-gray-700/30 rounded-lg p-3">
+                              <div className="flex items-center space-x-2">
+                                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span className="text-gray-300">{vendedor.nombre}</span>
+                              </div>
+                              <div className="mt-1 text-sm text-gray-400 flex items-center space-x-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span>{vendedor.email}</span>
+                              </div>
                             </div>
-                            <div className="mt-1 text-sm text-gray-400 flex items-center space-x-2">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              <span>{vendedor.email}</span>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-sm">No hay vendedores asignados</p>
-                      )}
+                          ))
+                        ) : (
+                          <p className="text-gray-500 text-sm">No hay vendedores asignados</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="mt-4 pt-4 border-t border-gray-700/50">
                     <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
